@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/activity_main"
+    android:layout_width="match_parent"
+    android:layout_height = "wrap_content"
+    android:padding="16dp"
+    tools:context=".MainActivity">
+
+
+    <android.support.v7.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="5dp"
+        app:cardElevation="10dp"
+        app:contentPaddingRight="10dp"
+        app:contentPaddingLeft="10dp"
+        app:cardMaxElevation="15dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            >
+
+
+            <ImageView
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                android:id="@+id/cardImage"
+                android:scaleType="centerCrop"
+                android:layout_margin="5dp"/>
+       <RelativeLayout
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content"
+             android:layout_toRightOf="@id/cardImage"
+             >
+            <TextView
+                android:id="@+id/cardTitle"
+                android:gravity="center_vertical"
+                android:text="Card Title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+           <TextView
+               android:layout_width="wrap_content"
+               android:layout_height="wrap_content"
+               android:id="@+id/author"
+               android:text="Author"
+               android:layout_below="@id/cardTitle"
+               android:gravity="center_vertical"
+               android:layout_margin="2dp"/>
+           <TextView
+               android:layout_width="wrap_content"
+               android:layout_height="wrap_content"
+               android:id="@+id/updated"
+               android:text="Updated"
+               android:layout_below="@id/author"
+               android:gravity="center_vertical"
+               android:layout_margin="2dp"/>
+
+       </RelativeLayout>
+        </RelativeLayout>
+    </android.support.v7.widget.CardView>
+</RelativeLayout>
