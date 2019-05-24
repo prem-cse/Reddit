@@ -162,6 +162,7 @@ public class MainActivity extends AppCompatActivity {
 
                 Log.e(TAG,"onFailure: "+t.getMessage());
                 Toast.makeText(MainActivity.this,t.getMessage(),Toast.LENGTH_SHORT).show();
+                progressDialog.dismiss();
             }
         });
 

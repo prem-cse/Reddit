@@ -76,15 +76,7 @@
             android:layout_height="100dp"
             android:id="@+id/commentLoadingProgressBar"
             android:layout_centerInParent="true"/>
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignBottom="@+id/commentLoadingProgressBar"
-            android:layout_alignTop="@+id/commentLoadingProgressBar"
-            android:layout_alignRight="@+id/commentLoadingProgressBar"
-            android:layout_alignLeft="@+id/commentLoadingProgressBar"
-            android:textSize="10sp"
-            android:textStyle="bold"/>
+
         <ListView
             android:layout_width="match_parent"
             android:layout_height="match_parent"

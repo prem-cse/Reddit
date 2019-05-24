@@ -1,13 +1,16 @@
 package com.example.reddit.Comments;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -26,6 +29,7 @@ import com.nostra13.universalimageloader.core.assist.ImageScaleType;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;
@@ -45,6 +49,9 @@ public class CommentsActivty extends AppCompatActivity {
     private static int defaultImage;
     private static String currfeed;
     private static final String BASE_URL = "https://www.reddit.com/r/";
+    private static List<Comment> mComment;
+    private static ListView listView;
+    private static ProgressBar commentLoadingProgressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -66,13 +73,43 @@ public class CommentsActivty extends AppCompatActivity {
             @Override
             public void onResponse(Call<Feed> call, Response<Feed> response) {
                 Log.d(TAG,"OnResponse : Server Response : "+response.toString());
-                List<Entry> entrys = response.body().getEntry();
-                for(int i=0;i<entrys.size();++i){
-                    Log.d(TAG," onResponse entry : "+entrys.get(i).toString()+
+                List<Entry> entrysList = response.body().getEntry();
+                for(int i=0;i<entrysList.size();++i){
+                    Log.d(TAG," onResponse entry : "+entrysList.get(i).toString()+
                             "\n---------------------------------------------------------------\n");
-                    ExtractEntry entry = new ExtractEntry("<div class=\"md\"><p>",entrys.get(i).getContent(),"</p>");
-                    entry.start();
+                    ExtractEntry entry = new ExtractEntry("<div class=\"md\"><p>",entrysList.get(i).getContent(),"</p>");
+                    List<String> commentsDetails = entry.start();
+
+                    try {
+                        mComment.add(new Comment(entrysList.get(i).getAuthor().getName(),
+                                entrysList.get(i).getId(),
+                                entrysList.get(i).getUpdated(),
+                                commentsDetails.get(0)));
+
+                    }catch (IndexOutOfBoundsException e){
+
+                        mComment.add(new Comment("None","None", "None", "Error in reading comment"));
+                        Log.d(TAG," Exception : "+e.getMessage());
+                    }catch(NullPointerException e){
+
+                        mComment.add(new Comment("None",
+                                entrysList.get(i).getId(),
+                                entrysList.get(i).getUpdated(),
+                                commentsDetails.get(0)));
+                        Log.d(TAG," Exception : "+e.getMessage());
+                    }
                 }
+                listView.setAdapter(new CommentsListAdapter(CommentsActivty.this,R.layout.comments_layout, (ArrayList<Comment>) mComment));
+                commentLoadingProgressBar.setVisibility(View.GONE);
+                listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                        getComments();
+                    }
+                });
+
+
+
             }
 
             @Override
@@ -85,24 +122,29 @@ public class CommentsActivty extends AppCompatActivity {
     }
 
     private void init(){
-        Intent incomingIntent = getIntent();
+        final Intent incomingIntent = getIntent();
         postUrl = incomingIntent.getStringExtra("@string/post_url");
         postauthor = incomingIntent.getStringExtra("@string/post_author");
         postdate = incomingIntent.getStringExtra("@string/post_date");
         postthumb = incomingIntent.getStringExtra("@string/post_thumb");
         posttitle = incomingIntent.getStringExtra("@string/post_title");
+        mComment = new ArrayList<>();
+        listView = findViewById(R.id.commentsListView);
+        commentLoadingProgressBar = findViewById(R.id.commentLoadingProgressBar);
+
 
         TextView title = findViewById(R.id.postTitle);
         TextView author = findViewById(R.id.postAuthor);
         TextView updated = findViewById(R.id.postUpdated);
         ImageView thumb = findViewById(R.id.postThumbnail);
         Button reply = findViewById(R.id.postReply);
-        ProgressBar progressBar = findViewById(R.id.postLoadingProgressBar);
+        ProgressBar postLoadingProgressBar = findViewById(R.id.postLoadingProgressBar);
 
         title.setText(posttitle);
         author.setText(postauthor);
         updated.setText(postdate);
-        setImage(postthumb,thumb,progressBar);
+        commentLoadingProgressBar.setVisibility(View.VISIBLE);
+        setImage(postthumb,thumb,postLoadingProgressBar);
 
         try{
             String[] spiltUrl = postUrl.split(BASE_URL);
@@ -112,9 +154,38 @@ public class CommentsActivty extends AppCompatActivity {
             Log.d(TAG," Exception : "+e.getMessage());
         }
 
+        reply.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+              getComments();
+            }
+        });
+
+        thumb.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.d(TAG,"Opening url in webview : "+postUrl);
+                Intent intent = new Intent(CommentsActivty.this,WebViewActivity.class);
+                intent.putExtra("@string/post_url",postUrl);
+                startActivity(intent);
+            }
+        });
 
 
     }
+
+    private void getComments() {
+        final Dialog dialog = new Dialog(CommentsActivty.this);
+        dialog.setTitle("dialog");
+        dialog.setContentView(R.layout.comment_input_dialog);
+
+        int width = (int)(getResources().getDisplayMetrics().widthPixels*0.95);
+        int height = (int)(getResources().getDisplayMetrics().heightPixels*0.30);
+
+        dialog.getWindow().setLayout(width,height);
+        dialog.show();
+    }
+
     private void setImage(String thumbUrl, ImageView imageView, final ProgressBar progressBar){
         //create the imageloader object
         ImageLoader imageLoader = ImageLoader.getInstance();
